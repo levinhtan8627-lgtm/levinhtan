@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PinyinMaster - Chinese Pronunciation Practice HSK 1-3</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Lexend', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between text-slate-800">
+
+    <header class="bg-white shadow-sm p-4 sticky top-0 z-10">
+        <div class="max-w-md mx-auto flex flex-col gap-3">
+            <div class="flex justify-between items-center">
+                <h1 class="text-xl font-bold text-emerald-600 flex items-center gap-2">
+                    <i class="fa-solid fa-microphone-lines"></i> PinyinMaster
+                </h1>
+                <span id="progress" class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium">Word 1/15</span>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 bg-slate-100 p-1 rounded-xl">
+                <button onclick="changeLevel(1)" id="btn-hsk1" class="py-2 text-sm font-semibold rounded-lg bg-white text-emerald-600 shadow-xs transition-all">HSK 1</button>
+                <button onclick="changeLevel(2)" id="btn-hsk2" class="py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-800 transition-all">HSK 2</button>
+                <button onclick="changeLevel(3)" id="btn-hsk3" class="py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-800 transition-all">HSK 3</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col items-center justify-center p-4 max-w-md mx-auto w-full gap-6">
+        
+        <div class="w-full bg-white rounded-3xl p-8 shadow-xl shadow-slate-100 border border-slate-100 text-center flex flex-col justify-between min-h-[320px] relative overflow-hidden">
+            <div class="absolute top-4 right-4">
+                <button onclick="speakTemplate()" class="w-10 h-10 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-volume-high text-lg"></i>
+                </button>
+            </div>
+
+            <div class="mt-4">
+                <h2 id="word-hanzi" class="text-6xl font-bold text-slate-800 tracking-wide mb-3">你好</h2>
+                <p id="word-pinyin" class="text-2xl font-medium text-emerald-600 lowercase">nǐ hǎo</p>
+            </div>
+
+            <div class="border-t border-slate-100 pt-4 mt-4">
+                <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">Meaning</p>
+                <p id="word-meaning" class="text-lg text-slate-600 font-medium">Hello</p>
+            </div>
+        </div>
+
+        <div id="result-box" class="w-full bg-white rounded-2xl p-4 border border-dashed border-slate-200 text-center min-h-[80px] flex items-center justify-center transition-all">
+            <p id="result-text" class="text-slate-400 text-sm font-medium">Tap the Mic button below and speak out loud</p>
+        </div>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-100 p-6 pb-8">
+        <div class="max-w-md mx-auto flex justify-between items-center gap-4">
+            
+            <button onclick="prevWord()" class="w-12 h-12 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center hover:bg-slate-100 transition-all">
+                <i class="fa-solid fa-chevron-left text-lg"></i>
+            </button>
+
+            <button id="btn-mic" class="w-20 h-20 bg-emerald-500 text-white rounded-full flex flex-col items-center justify-center shadow-lg shadow-emerald-200 hover:bg-emerald-600 transition-all relative">
+                <div id="pulse-ring" class="absolute inset-0 rounded-full bg-emerald-500 scale-100 opacity-0 transition-all duration-500"></div>
+                <i id="mic-icon" class="fa-solid fa-microphone text-2xl z-10"></i>
+                <span id="mic-status" class="text-[10px] font-bold tracking-wider uppercase mt-1 z-10">SPEAK</span>
+            </button>
+
+            <button onclick="nextWord()" class="w-12 h-12 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center hover:bg-slate-100 transition-all">
+                <i class="fa-solid fa-chevron-right text-lg"></i>
+            </button>
+            
+        </div>
+    </footer>
+
+    <script>
+        const database = {
+            1: [
+                { hanzi: "你好", pinyin: "nǐ hǎo", meaning: "Hello" },
+                { hanzi: "谢谢", pinyin: "xièxie", meaning: "Thank you" },
+                { hanzi: "苹果", pinyin: "píngguǒ", meaning: "Apple" },
+                { hanzi: "医生", pinyin: "yīshēng", meaning: "Doctor" },
+                { hanzi: "猫", pinyin: "māo", meaning: "Cat" },
+                { hanzi: "看书", pinyin: "kàn shū", meaning: "Read a book" },
+                { hanzi: "喝水", pinyin: "hē shuǐ", meaning: "Drink water" },
+                { hanzi: "老师", pinyin: "lǎoshī", meaning: "Teacher" },
+                { hanzi: "学生", pinyin: "xuéshēng", meaning: "Student" },
+                { hanzi: "飞机", pinyin: "fēijī", meaning: "Airplane" },
+                { hanzi: "高兴", pinyin: "gāoxìng", meaning: "Happy, Glad" },
+                { hanzi: "后面", pinyin: "hòumiàn", meaning: "Behind, Back" },
+                { hanzi: "星期", pinyin: "xīngqī", meaning: "Week" },
+                { hanzi: "衣服", pinyin: "yīfu", meaning: "Clothes" },
+                { hanzi: "中午", pinyin: "zhōngwǔ", meaning: "Noon, Midday" }
+            ],
+            2: [
+                { hanzi: "跑步", pinyin: "pǎobù", meaning: "Running" },
+                { hanzi: "唱歌", pinyin: "chànggē", meaning: "Singing" },
+                { hanzi: "便宜", pinyin: "piányi", meaning: "Cheap" },
+                { hanzi: "生病", pinyin: "shēngbìng", meaning: "To get sick" },
+                { hanzi: "机场", pinyin: "jīchǎng", meaning: "Airport" },
+                { hanzi: "准备", pinyin: "zhǔnbèi", meaning: "To prepare" },
+                { hanzi: "帮助", pinyin: "bāngzhù", meaning: "To help" },
+                { hanzi: "生肖", pinyin: "shēngxiào", meaning: "Chinese Zodiac" },
+                { hanzi: "跳舞", pinyin: "tiàowǔ", meaning: "To dance" },
+                { hanzi: "旅游", pinyin: "lǚyóu", meaning: "To travel" },
+                { hanzi: "运动", pinyin: "yùndòng", meaning: "Sports, Exercise" },
+                { hanzi: "手表", pinyin: "shǒubiǎo", meaning: "Wristwatch" },
+                { hanzi: "送", pinyin: "sòng", meaning: "To give as a gift / To see off" },
+                { hanzi: "希望", pinyin: "xīwàng", meaning: "To hope / Hope" },
+                { hanzi: "觉得", pinyin: "juéde", meaning: "To think, To feel" }
+            ],
+            3: [
+                { hanzi: "感兴趣", pinyin: "gǎn xìngqù", meaning: "Interested in" },
+                { hanzi: "笔记本", pinyin: "bǐjìběn", meaning: "Notebook / Laptop" },
+                { hanzi: "环境", pinyin: "huánjìng", meaning: "Environment" },
+                { hanzi: "解决", pinyin: "jiějué", meaning: "To solve" },
+                { hanzi: "愿意", pinyin: "yuànyì", meaning: "To be willing to" },
+                { hanzi: "检查", pinyin: "jiǎnchá", meaning: "To examine / To check" },
+                { hanzi: "影响", pinyin: "yǐngxiǎng", meaning: "Influence / To affect" },
+                { hanzi: "清楚", pinyin: "qīngchu", meaning: "Clear / To understand" },
+                { hanzi: "习惯", pinyin: "xíguàn", meaning: "Habit / To get used to" },
+                { hanzi: "锻炼", pinyin: "duànliàn", meaning: "To do physical exercise" },
+                { hanzi: "聊天", pinyin: "liáotiān", meaning: "To chat" },
+                { hanzi: "要求", pinyin: "yāoqiú", meaning: "Requirement / To demand" },
+                { hanzi: "历史", pinyin: "lìshǐ", meaning: "History" },
+                { hanzi: "满意", pinyin: "mǎnyì", meaning: "Satisfied" },
+                { hanzi: "照顾", pinyin: "zhàogù", meaning: "To take care of" }
+            ]
+        };
+
+        let currentLevel = 1;
+        let currentIndex = 0;
+        let isListening = false;
+        let recognition = null;
+
+        // Khởi tạo bộ nhận diện giọng nói chuẩn và bắt lỗi phân quyền Micro
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.lang = 'zh-CN'; 
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                recognition.onstart = () => {
+                    setMicState(true);
+                };
+
+                recognition.onerror = (event) => {
+                    console.error("Speech Recognition Error:", event.error);
+                    setMicState(false);
+                    if (event.error === 'not-allowed') {
+                        showResult("❌ Microphone access denied! Please check Chrome browser app permissions in settings.", "error");
+                    } else {
+                        showResult("Could not hear clearly. Please try again!", "error");
+                    }
+                };
+
+                recognition.onend = () => {
+                    setMicState(false);
+                };
+
+                recognition.onresult = (event) => {
+                    const userSpeech = event.results[0][0].transcript;
+                    validateSpeech(userSpeech);
+                };
+                return true;
+            } else {
+                showResult("⚠️ Browser not supported. Please open this website inside official Google Chrome app.", "error");
+                return false;
+            }
+        }
+
+        // Đồng bộ hóa nút bấm hỗ trợ cả click chuột lẫn chạm Touch trên màn hình điện thoại iQOO
+        const micButton = document.getElementById("btn-mic");
+        
+        function handleMicAction(e) {
+            e.preventDefault(); // Ngăn lỗi chặn sự kiện đúp trên mobile
+            if (!recognition) {
+                const initSuccess = initSpeechRecognition();
+                if (!initSuccess) return;
+            }
+            toggleSpeech();
+        }
+
+        micButton.addEventListener("click", handleMicAction);
+        micButton.addEventListener("touchstart", handleMicAction, {passive: false});
+
+        function updateWord() {
+            const currentList = database[currentLevel];
+            const word = currentList[currentIndex];
+            
+            document.getElementById("word-hanzi").innerText = word.hanzi;
+            document.getElementById("word-pinyin").innerText = word.pinyin;
+            document.getElementById("word-meaning").innerText = word.meaning;
+            
+            document.getElementById("progress").innerText = `Word ${currentIndex + 1}/${currentList.length}`;
+            
+            const resultBox = document.getElementById("result-box");
+            resultBox.className = "w-full bg-white rounded-2xl p-4 border border-dashed border-slate-200 text-center min-h-[80px] flex items-center justify-center transition-all";
+            document.getElementById("result-text").innerText = "Tap the Mic button below and speak out loud";
+            document.getElementById("result-text").className = "text-slate-400 text-sm font-medium";
+        }
+
+        function changeLevel(level) {
+            currentLevel = level;
+            currentIndex = 0;
+            [1, 2, 3].forEach(l => {
+                const btn = document.getElementById(`btn-hsk${l}`);
+                if (l === level) {
+                    btn.className = "py-2 text-sm font-semibold rounded-lg bg-white text-emerald-600 shadow-xs transition-all";
+                } else {
+                    btn.className = "py-2 text-sm font-semibold rounded-lg text-slate-500 hover:text-slate-800 transition-all";
+                }
+            });
+            updateWord();
+        }
+
+        function nextWord() {
+            if (currentIndex < database[currentLevel].length - 1) {
+                currentIndex++;
+                updateWord();
+            }
+        }
+
+        function prevWord() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateWord();
+            }
+        }
+
+        function speakTemplate() {
+            const hanzi = database[currentLevel][currentIndex].hanzi;
+            const utterance = new SpeechSynthesisUtterance(hanzi);
+            utterance.lang = 'zh-CN';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleSpeech() {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.log("Recognition already active or restarting...");
+                }
+            }
+        }
+
+        function setMicState(listening) {
+            isListening = listening;
+            const btn = document.getElementById("btn-mic");
+            const icon = document.getElementById("mic-icon");
+            const status = document.getElementById("mic-status");
+            const ring = document.getElementById("pulse-ring");
+
+            if (listening) {
+                btn.className = "w-20 h-20 bg-red-500 text-white rounded-full flex flex-col items-center justify-center shadow-lg shadow-red-200 transition-all relative";
+                icon.className = "fa-solid fa-stop text-2xl z-10 animate-pulse";
+                status.innerText = "STOP";
+                ring.className = "absolute inset-0 rounded-full bg-red-500 scale-125 opacity-30 animate-ping";
+                document.getElementById("result-text").innerText = "Listening... Speak now!";
+            } else {
+                btn.className = "w-20 h-20 bg-emerald-500 text-white rounded-full flex flex-col items-center justify-center shadow-lg shadow-emerald-200 transition-all relative";
+                icon.className = "fa-solid fa-microphone text-2xl z-10";
+                status.innerText = "SPEAK";
+                ring.className = "absolute inset-0 rounded-full bg-emerald-500 scale-100 opacity-0 transition-all";
+            }
+        }
+
+        function validateSpeech(userSpeech) {
+            const targetHanzi = database[currentLevel][currentIndex].hanzi;
+            const cleanUser = userSpeech.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()？。，]/g,"").trim();
+            const cleanTarget = targetHanzi.trim();
+
+            if (cleanUser === cleanTarget) {
+                showResult(`🤩 Excellent! You said: "${userSpeech}"`, "success");
+            } else {
+                showResult(`❌ Not quite right! You said: "${userSpeech}". Listen to the template and try again!`, "warning");
+            }
+        }
+
+        function showResult(text, type) {
+            const resultBox = document.getElementById("result-box");
+            const resultText = document.getElementById("result-text");
+            resultText.innerText = text;
+
+            if (type === "success") {
+                resultBox.className = "w-full bg-emerald-50 rounded-2xl p-4 border border-emerald-300 text-center min-h-[80px] flex items-center justify-center transition-all";
+                resultText.className = "text-emerald-700 font-semibold text-sm";
+            } else if (type === "warning") {
+                resultBox.className = "w-full bg-amber-50 rounded-2xl p-4 border border-amber-300 text-center min-h-[80px] flex items-center justify-center transition-all";
+                resultText.className = "text-amber-700 font-medium text-sm";
+            } else {
+                resultBox.className = "w-full bg-rose-50 rounded-2xl p-4 border border-rose-200 text-center min-h-[80px] flex items-center justify-center transition-all";
+                resultText.className = "text-rose-600 font-medium text-sm";
+            }
+        }
+
+        updateWord();
+    </script>
+</body>
+</html>
+
